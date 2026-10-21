@@ -19,39 +19,46 @@ function App() {
   }
 
   return (
-    <main>
+    <main className="container my-5" style={{ maxWidth: "24rem" }}>
       <h1>Create user</h1>
-      <form onSubmit={handleSubmit} noValidate>
-        <label>
+      <form className="d-grid gap-3" onSubmit={handleSubmit} noValidate>
+        <label className="form-label w-100">
           User name
           <input
+            className="form-control"
             type="text"
             name="username"
             value={form.username}
             onChange={handleChange}
           />
         </label>
-        <label>
+        <label className="form-label w-100">
           Email address
           <input
+            className="form-control"
             type="email"
             name="email"
             value={form.email}
             onChange={handleChange}
           />
         </label>
-        <label>
+        <label className="form-label w-100">
           Password
           <input
+            className="form-control"
             type="password"
             name="password"
             value={form.password}
             onChange={handleChange}
           />
         </label>
-        <div className="buttons">
-          <button type="submit">Create</button>
-          <button type="button" onClick={handleCancel}>
+        <div className="d-flex gap-2">
+          <button type="submit" className="btn btn-primary">Create</button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleCancel}
+          >
             Cancel
           </button>
         </div>
