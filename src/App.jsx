@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const emptyForm = { username: '', email: '', password: '' }
+const emptyForm = { username: '', email: '', password: '', confirmPassword: '' }
 
 function App() {
   const [form, setForm] = useState(emptyForm)
@@ -49,6 +49,16 @@ function App() {
             type="password"
             name="password"
             value={form.password}
+            onChange={handleChange}
+          />
+        </label>
+        <label className="form-label w-100">
+          Confirm password
+          <input
+            className="form-control"
+            type="password"
+            name="confirmPassword"
+            value={form.confirmPassword}
             onChange={handleChange}
           />
         </label>
