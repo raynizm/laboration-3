@@ -1,16 +1,31 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const emptyForm = { name: '', email: '', password: '', confirmPassword: '' }
 
 function App() {
   const [form, setForm] = useState(emptyForm)
+  const [users, setUsers] = useState([])
+
+  useEffect(() => {
+    fetch('/api/users')
+      .then((res) => res.json())
+      .then(setUsers)
+  }, [])
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    const { name, email, password } = form
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    })
+    const user = await res.json()
+    setUsers([...users, user])
     setForm(emptyForm)
   }
 
