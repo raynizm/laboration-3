@@ -42,3 +42,12 @@ För att upprepa testen: starta `npm run dev`, följ stegen i kolumnen Indata oc
 
 - Valideringen körs bara i webbläsaren. API:et godtar vilken indata som helst om det anropas direkt.
 - Det slumpmässiga lösenordet ("Generate password") garanterar inte att kraven i K7 uppfylls. Det kan sakna versal eller gemen och då stoppas av valideringen.
+
+## Noteringar om den andra studentens modul (`form-validation`)
+
+Följande iakttogs vid integreringen. De påverkar inte applikationens testresultat, eftersom valideringen fungerade som dokumenterat i testfallen ovan.
+
+- Modulens `package.json` heter `laboration-2`, samma namn som min egen modul. Den måste därför installeras under ett alias (`form-validation`) för att inte krocka.
+- `package.json` saknar `main` och `exports`, så modulen kan inte importeras via paketnamnet. Applikationen importerar i stället filerna direkt, till exempel `form-validation/src/Rule.js`.
+- README beskriver bara hur man klonar repot, inte hur man använder det som ett beroende.
+- `repository`, `bugs` och `homepage` i `package.json` pekar på `Fielifia/1dv610-laboration-2`, inte på repot `Fielifia/form-validation`.
