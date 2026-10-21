@@ -38,4 +38,20 @@ createUserValidation.addField(email)
 createUserValidation.addField(password)
 createUserValidation.addField(confirmPassword)
 
-export default createUserValidation
+/**
+ * Validates the create-user form.
+ * @param {Object} form - Form values keyed by field name.
+ * @returns {{ isValid: boolean, errors: Object<string, string[]> }}
+ *   Error messages grouped by field name.
+ */
+export function validateUser(form) {
+  const result = createUserValidation.validate(form)
+  const errors = {}
+
+  for (const { field, errorMessage } of result.errors) {
+    errors[field.identifier] ??= []
+    errors[field.identifier].push(errorMessage)
+  }
+
+  return { isValid: result.success, errors }
+}
