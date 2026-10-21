@@ -32,4 +32,9 @@ app.post('/api/users', (req, res) => {
   res.status(201).json({ id: Number(lastInsertRowid), name, email })
 })
 
+app.delete('/api/users/:id', (req, res) => {
+  db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id)
+  res.status(204).end()
+})
+
 app.listen(3001, () => console.log('API listening on http://localhost:3001'))
