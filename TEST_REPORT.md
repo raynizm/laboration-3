@@ -1,53 +1,55 @@
-# Testrapport
+# Test Report
 
-## Sammanfattning
+## Summary
 
-Kraven i [README.md](README.md) har testats på två nivåer. Logiken har körts utan webbläsare, och gränssnittet har testats manuellt i webbläsaren.
+The requirements K1–K13 in [README.md](README.md) were tested in two ways, so that someone else can repeat them.
 
-- **API (K1–K4):** en separat serverinstans startades med en tom, tillfällig databas (`PORT=3101 DB_FILE=<tillfällig fil> node server/index.js`). Anrop gjordes med `curl` mot `/api/users`, och databasinnehållet lästes direkt ur SQLite-filen.
-- **Validering (K5–K8, K13):** valideringskonfigurationen i `src/validation.js` kördes med Node.js på olika indata, och resultatet (`success` och felmeddelanden) lästes av.
-- **Lösenordsgenerering (K9, K10):** `PasswordGenerator` från modulen anropades i Node.js med samma argument som knapparna använder.
-- **Gränssnitt (K11, K12 samt visning av K1, K2, K4, K13):** testades manuellt i webbläsaren med `npm run dev`, genom att utföra stegen i kolumnen Indata och jämföra med Förväntat utfall.
+**Scripted checks (no browser).** These cover the API, the validation rules and the password generation:
 
-För att upprepa testen: starta `npm run dev`, följ stegen i kolumnen Indata och jämför med Förväntat utfall.
+- **API (K1–K4):** a separate server instance was started with an empty, temporary database (`PORT=3101 DB_FILE=<temporary file> node server/index.js`). Requests were sent with `curl` to `/api/users`, and the database row was read directly from the SQLite file. The stored password record was checked with `SecureHasher.verifyPassword` from the laboration-2 module.
+- **Validation (K5–K8, K13):** the validation configuration in `src/validation.js` was run in Node.js on different inputs, and `isValid` and the error messages were read from the result.
+- **Password generation (K9, K10):** `PasswordGenerator` from the laboration-2 module was called in Node.js with the same arguments the buttons use.
 
-## Testfall
+**Manual tests in the browser (K1, K2, K4, K9–K13).** The app was started with `npm run dev` (http://localhost:5173), and the steps in the *Input* column were carried out by hand and compared with the *Expected outcome* column.
 
-| Testfall | Krav | Indata | Förväntat utfall | Faktiskt utfall |
-| --- | --- | --- | --- | --- |
-| Lista användare, tom databas | K1 | `GET /api/users` | `[]` | `[]` (OK) |
-| Skapa användare | K2 | `POST /api/users` med name `Anna`, email `anna@example.com`, password `Secret123` | Status 201 och användaren (utan lösenord) returneras; användaren syns i listan | `{"id":1,"name":"Anna","email":"anna@example.com"}`, finns i `GET /api/users` (OK) |
-| Lösenord sparas som hash | K3 | Läs raden för användaren ovan direkt ur SQLite och verifiera med `SecureHasher.verifyPassword` | `password_hash` och `password_salt` är fyllda, `password_algorithm` är `PBKDF2-SHA256`, klartexten `Secret123` finns inte i raden; rätt lösenord verifieras, fel lösenord avvisas | Som förväntat; `verifyPassword('Secret123')` gav `true` och `verifyPassword('nope')` gav `false` (OK) |
-| Lösenord saknas i API-anrop | K2 | `POST /api/users` med name och email men utan password | Status 400 och ingen användare skapas | `{"error":"Password is required"}` med status 400, listan oförändrad (OK) |
-| Ta bort användare | K4 | `DELETE /api/users/1` | Status 204; användaren finns inte längre i listan | 204 och `[]` (OK) |
-| Ta bort användare i gränssnittet | K4 | Klicka på papperskorgen på en rad | Raden försvinner direkt och kommer inte tillbaka efter omladdning | OK (manuellt test i webbläsaren) |
-| Tabell visar användare i gränssnittet | K1 | Skapa en användare och ladda om sidan | Användaren visas i tabellen; tomma rader fyller ut till minst fem rader | OK (manuellt test i webbläsaren) |
-| Tomt namn | K5 | name tomt, övriga fält giltiga | Fel: `Name is required.` | `Name is required.` när alla fält var tomma (OK) |
-| Tom e-postadress | K6 | email tom | Fel: `Email address is required.` | `Email address is required.` när alla fält var tomma (OK) |
-| Ogiltig e-postadress | K6 | email `a@b` | Fel: `Enter a valid email address.` | `Enter a valid email address.` (OK) |
-| Tomt lösenord | K7 | password tomt | Fel: `Password is required.` | `Password is required.` när alla fält var tomma (OK) |
-| För kort lösenord | K7 | password `Abcdefg` | Fel: `Password must be at least 8 characters.` | Felet gavs (OK) |
-| Lösenord utan versal | K7 | password `abcdefgh1` | Fel: `Password must contain an uppercase letter.` | Felet gavs (OK) |
-| Lösenord utan gemen | K7 | password `ABCDEFGH1` | Fel: `Password must contain a lowercase letter.` | Felet gavs (OK) |
-| Lösenord som matchar | K7, K8 | name `Ann`, email `a@b.com`, password och bekräftelse `Abcdefg1` | Ingen validering misslyckas | `success: true`, inga fel (OK) |
-| Bekräftelse saknas | K8 | confirmPassword tomt | Fel: `Please confirm the password.` | Felet gavs när alla fält var tomma (OK) |
-| Bekräftelse matchar inte | K8 | password `Abcdefg1`, bekräftelse `Abcdefg2` | Fel: `Passwords do not match.` | Felet gavs (OK) |
-| Felmeddelanden visas vid fälten | K13 | Klicka Create med tomt formulär | Röd kant och felmeddelande under varje fält; ingen användare skapas | OK (manuellt test i webbläsaren) |
-| Generera lösenord | K9 | `generate(8)` | Ett slumpmässigt lösenord på 8 tecken, bokstäver och siffror | `q4Z4P3vY` (OK). Knappen och att fälten fylls i: OK (manuellt test i webbläsaren) |
-| Generera starkt lösenord | K10 | `generate(18, { pattern: true, groupSize: 6 })` | 18 tecken i tre grupper åtskilda av `-` | `uap7EY-0pYhz8-D47txP` (OK). Knappen och att fälten fylls i: OK (manuellt test i webbläsaren) |
-| Visa och dölj lösenord | K11 | Klicka på ögonknappen | Lösenord och bekräftelse växlar mellan prickar och text; ikonen byter utseende | OK (manuellt test i webbläsaren) |
-| Töm formuläret | K12 | Fyll i fälten, orsaka fel, klicka Clear | Alla fält och felmeddelanden töms | OK (manuellt test i webbläsaren) |
+The deployed instance at https://laboration-3-68dy.onrender.com/ was only checked for loading (the start page and `GET /api/users` both returned status 200). The test cases above were not repeated against it.
 
-## Kända begränsningar
+**Hardest to test.** The user interface needs a real browser, so those cases are manual and not automated. Password generation is random, so the tests check the format (length, character types, dash groups) and not exact values.
 
-- Valideringen körs bara i webbläsaren. API:et godtar vilken indata som helst om det anropas direkt.
-- Det slumpmässiga lösenordet ("Generate password") garanterar inte att kraven i K7 uppfylls. Det kan sakna versal eller gemen och då stoppas av valideringen.
+## Test Results
 
-## Noteringar om den andra studentens modul (`form-validation`)
+**Your test results:**
 
-Följande iakttogs vid integreringen. De påverkar inte applikationens testresultat, eftersom valideringen fungerade som dokumenterat i testfallen ovan.
+| Test case | Requirement | Input | Expected outcome | Actual outcome |
+| --------- | ----------- | ----- | ---------------- | -------------- |
+| List users, empty database | K1 | `GET /api/users` | `[]` | ✅ `[]` |
+| Show users in the interface | K1 | Create a user and reload the page. | The user is shown in the table; empty placeholder rows fill the table to at least five rows. | ✅ As expected. |
+| Create a user | K2 | `POST /api/users` with name `Anna`, email `anna@example.com`, password `Secret123`. | Status 201 and the user (without password) is returned; the user appears in the list. | ✅ `{"id":1,"name":"Anna","email":"anna@example.com"}`, and the user is in `GET /api/users`. |
+| Create a user without password | K2 | `POST /api/users` with name and email but no password. | Status 400 and no user is created. | ✅ `{"error":"Password is required"}` with status 400; the list was unchanged. |
+| Password is stored as a hash | K3 | Read the row for the user above directly from SQLite and check it with `SecureHasher.verifyPassword`. | `password_hash` and `password_salt` are filled in, `password_algorithm` is `PBKDF2-SHA256`, the plaintext `Secret123` is not in the row; the right password verifies and a wrong one is rejected. | ✅ As expected; `verifyPassword('Secret123')` returned `true` and `verifyPassword('nope')` returned `false`. |
+| Delete a user | K4 | `DELETE /api/users/1` | Status 204; the user is gone from the list. | ✅ 204 and `[]`. |
+| Delete a user in the interface | K4 | Click the trash can on a row. | The row disappears immediately and does not come back after a reload. | ✅ As expected. |
+| Empty name | K5 | Name left empty, other fields valid. | Error: `Name is required.` | ✅ `Name is required.` (checked with all fields empty). |
+| Empty email address | K6 | Email left empty. | Error: `Email address is required.` | ✅ `Email address is required.` (checked with all fields empty). |
+| Invalid email address | K6 | Email `a@b` | Error: `Enter a valid email address.` | ✅ `Enter a valid email address.` |
+| Empty password | K7 | Password left empty. | Error: `Password is required.` | ✅ `Password is required.` (checked with all fields empty). |
+| Password too short | K7 | Password `Abcdefg` | Error: `Password must be at least 8 characters.` | ✅ As expected. |
+| Password without uppercase letter | K7 | Password `abcdefgh1` | Error: `Password must contain an uppercase letter.` | ✅ As expected. |
+| Password without lowercase letter | K7 | Password `ABCDEFGH1` | Error: `Password must contain a lowercase letter.` | ✅ As expected. |
+| Valid input | K7, K8 | Name `Ann`, email `a@b.com`, password and confirmation `Abcdefg1`. | Validation succeeds with no errors. | ✅ `isValid: true`, no errors. |
+| Confirmation missing | K8 | Confirm password left empty. | Error: `Please confirm the password.` | ✅ As expected (checked with all fields empty). |
+| Confirmation does not match | K8 | Password `Abcdefg1`, confirmation `Abcdefg2`. | Error: `Passwords do not match.` | ✅ As expected. |
+| Generate a password | K9 | `generate(8)` in Node.js, and clicking "Generate password" in the browser. | A random password of 8 letters and digits, filled into both password fields. | ✅ `q4Z4P3vY`; the button fills both fields. |
+| Generate a strong password | K10 | `generate(18, { pattern: true, groupSize: 6 })` in Node.js, and clicking "Generate strong password" in the browser. | 18 characters in three groups separated by `-`, filled into both password fields. | ✅ `uap7EY-0pYhz8-D47txP`; the button fills both fields. |
+| Show and hide the password | K11 | Click the eye button. | Password and confirmation switch between dots and text; the icon changes. | ✅ As expected. |
+| Clear the form | K12 | Fill in the fields, cause errors, click "Clear". | All fields and error messages are cleared. | ✅ As expected. |
+| Error messages next to the fields | K13 | Click "Create" with an empty form. | A red border and an error message under each field; no user is created. | ✅ As expected. |
 
-- Modulens `package.json` heter `laboration-2`, samma namn som min egen modul. Den måste därför installeras under ett alias (`form-validation`) för att inte krocka.
-- `package.json` saknar `main` och `exports`, så modulen kan inte importeras via paketnamnet. Applikationen importerar i stället filerna direkt, till exempel `form-validation/src/Rule.js`.
-- README beskriver bara hur man klonar repot, inte hur man använder det som ett beroende.
-- `repository`, `bugs` och `homepage` i `package.json` pekar på `Fielifia/1dv610-laboration-2`, inte på repot `Fielifia/form-validation`.
+## Known Issues in Third-Party Modules
+
+The other student's module (`form-validation`) validated correctly in every test above. These flaws affected how it could be installed and imported. They do not change the test results, and no issue has been filed in the module's repository yet.
+
+- **Package name clash.** Its `package.json` is named `laboration-2`, the same as my own module, so the two clash when installed. Handled by installing it under an alias (`form-validation`).
+- **No entry point.** `package.json` has no `main` or `exports`, so the module cannot be imported by its package name. Handled by importing the files directly, for example `form-validation/src/Rule.js`.
+- **No install instructions.** Its README only describes cloning the repository, not using it as a dependency.
+- **Wrong repository links.** `repository`, `bugs` and `homepage` in `package.json` point to `Fielifia/1dv610-laboration-2` instead of `Fielifia/form-validation`.
