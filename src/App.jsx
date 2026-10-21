@@ -40,9 +40,21 @@ function App() {
     setUsers(users.filter((user) => user.id !== id))
   }
 
-  const handleGeneratePassword = () => {
-    const password = passwordGenerator.generateStrong(16)
+  const fillPassword = (password) => {
     setForm({ ...form, password, confirmPassword: password })
+  }
+
+  const handleGeneratePassword = () => {
+    fillPassword(passwordGenerator.generate(8))
+  }
+
+  const handleGenerateStrongPassword = () => {
+
+    let password
+    
+    password = passwordGenerator.generate(18, { pattern: true, groupSize: 6 })
+
+    fillPassword(password)
   }
 
   const handleClear = () => {
@@ -80,13 +92,22 @@ function App() {
                 <label htmlFor="password" className="form-label mb-0">
                   Password
                 </label>
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  onClick={handleGeneratePassword}
-                >
-                  Generate password
-                </button>
+                <div className="d-flex flex-wrap justify-content-end gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={handleGeneratePassword}
+                  >
+                    Generate password
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={handleGenerateStrongPassword}
+                  >
+                    Generate strong password
+                  </button>
+                </div>
               </div>
               <div className="input-group">
                 <input
