@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
+import { PasswordGenerator } from 'laboration-2'
 
 const MIN_ROWS = 5
+
+const passwordGenerator = new PasswordGenerator()
 
 const emptyForm = { name: '', email: '', password: '', confirmPassword: '' }
 
@@ -34,6 +37,11 @@ function App() {
   const handleDelete = async (id) => {
     await fetch(`/api/users/${id}`, { method: 'DELETE' })
     setUsers(users.filter((user) => user.id !== id))
+  }
+
+  const handleGeneratePassword = () => {
+    const password = passwordGenerator.generateStrong(16)
+    setForm({ ...form, password, confirmPassword: password })
   }
 
   const handleClear = () => {
@@ -74,6 +82,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-outline-secondary btn-sm"
+                  onClick={handleGeneratePassword}
                 >
                   Generate password
                 </button>
