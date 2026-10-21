@@ -2,7 +2,7 @@ import { randomBytes, scryptSync } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
 import express from 'express'
 
-const db = new DatabaseSync('users.db')
+const db = new DatabaseSync(process.env.DB_FILE ?? 'users.db')
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,4 +37,5 @@ app.delete('/api/users/:id', (req, res) => {
   res.status(204).end()
 })
 
-app.listen(3001, () => console.log('API listening on http://localhost:3001'))
+const port = process.env.PORT ?? 3001
+app.listen(port, () => console.log(`API listening on http://localhost:${port}`))
