@@ -64,16 +64,27 @@ function App() {
                 onChange={handleChange}
               />
             </label>
-            <label className="form-label w-100">
-              Password
+            <div>
+              <div className="d-flex justify-content-between align-items-end mb-2">
+                <label htmlFor="password" className="form-label mb-0">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                >
+                  Generate password
+                </button>
+              </div>
               <input
+                id="password"
                 className="form-control"
                 type="password"
                 name="password"
                 value={form.password}
                 onChange={handleChange}
               />
-            </label>
+            </div>
             <label className="form-label w-100">
               Confirm password
               <input
