@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+const MIN_ROWS = 5
+
 const emptyForm = { name: '', email: '', password: '', confirmPassword: '' }
 
 function App() {
@@ -148,6 +150,14 @@ function App() {
                   </td>
                 </tr>
               ))}
+              {Array.from(
+                { length: Math.max(0, MIN_ROWS - users.length) },
+                (_, i) => (
+                  <tr key={`empty-${i}`} style={{ height: '3.25rem' }}>
+                    <td colSpan={4}></td>
+                  </tr>
+                ),
+              )}
             </tbody>
           </table>
         </section>
