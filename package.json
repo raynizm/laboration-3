@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "express": "^5.3.0",
+    "form-validation": "github:Fielifia/form-validation",
     "laboration-2": "github:raynizm/laboration-2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PasswordGenerator } from 'laboration-2'
+import createUserValidation from './validation.js'
 
 const MIN_ROWS = 5
 
@@ -11,6 +12,7 @@ function App() {
   const [form, setForm] = useState(emptyForm)
   const [users, setUsers] = useState([])
   const [showPassword, setShowPassword] = useState(false)
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     fetch('/api/users')
@@ -24,6 +26,18 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    const result = createUserValidation.validate(form)
+    const fieldErrors = {}
+    for (const { field, errorMessage } of result.errors) {
+      fieldErrors[field.identifier] = [
+        ...(fieldErrors[field.identifier] ?? []),
+        errorMessage,
+      ]
+    }
+    setErrors(fieldErrors)
+    if (!result.success) return
+
     const { name, email, password } = form
     const res = await fetch('/api/users', {
       method: 'POST',
@@ -34,6 +48,14 @@ function App() {
     setUsers([...users, user])
     setForm(emptyForm)
   }
+
+  const inputClass = (field) =>
+    `form-control${errors[field] ? ' is-invalid' : ''}`
+
+  const fieldFeedback = (field) =>
+    errors[field] && (
+      <div className="invalid-feedback d-block">{errors[field].join(' ')}</div>
+    )
 
   const handleDelete = async (id) => {
     await fetch(`/api/users/${id}`, { method: 'DELETE' })
@@ -49,9 +71,8 @@ function App() {
   }
 
   const handleGenerateStrongPassword = () => {
-
     let password
-    
+
     password = passwordGenerator.generate(18, { pattern: true, groupSize: 6 })
 
     fillPassword(password)
@@ -59,6 +80,7 @@ function App() {
 
   const handleClear = () => {
     setForm(emptyForm)
+    setErrors({})
   }
 
   return (
@@ -70,22 +92,24 @@ function App() {
             <label className="form-label w-100">
               Name
               <input
-                className="form-control"
+                className={inputClass('name')}
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
               />
+              {fieldFeedback('name')}
             </label>
             <label className="form-label w-100">
               Email address
               <input
-                className="form-control"
+                className={inputClass('email')}
                 type="email"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
               />
+              {fieldFeedback('email')}
             </label>
             <div>
               <div className="d-flex justify-content-between align-items-end mb-2">
@@ -112,7 +136,7 @@ function App() {
               <div className="input-group">
                 <input
                   id="password"
-                  className="form-control"
+                  className={inputClass('password')}
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={form.password}
@@ -147,16 +171,18 @@ function App() {
                   </svg>
                 </button>
               </div>
+              {fieldFeedback('password')}
             </div>
             <label className="form-label w-100">
               Confirm password
               <input
-                className="form-control"
+                className={inputClass('confirmPassword')}
                 type={showPassword ? 'text' : 'password'}
                 name="confirmPassword"
                 value={form.confirmPassword}
                 onChange={handleChange}
               />
+              {fieldFeedback('confirmPassword')}
             </label>
             <div className="d-flex justify-content-between gap-2">
               <button
