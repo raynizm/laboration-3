@@ -14,7 +14,7 @@ function App() {
     setForm(emptyForm)
   }
 
-  const handleCancel = () => {
+  const handleClear = () => {
     setForm(emptyForm)
   }
 
@@ -62,15 +62,15 @@ function App() {
             onChange={handleChange}
           />
         </label>
-        <div className="d-flex gap-2">
-          <button type="submit" className="btn btn-primary">Create</button>
+        <div className="d-flex justify-content-between gap-2">
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={handleCancel}
+            onClick={handleClear}
           >
-            Cancel
+            Clear
           </button>
+          <button type="submit" className="btn btn-primary">Create</button>
         </div>
       </form>
     </main>
