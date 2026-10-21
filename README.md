@@ -65,7 +65,7 @@ src/
 
 ## Tillgängliggörande
 
-TBA
+Applikationen är driftsatt på Render och nås på https://laboration-3-68dy.onrender.com/. Den byggs från detta GitHub-repo med `npm install --include=dev && npm run build` och startas med `npm start`.
 
 ## Test
 
