@@ -1,41 +1,20 @@
-import { randomBytes, scryptSync } from 'node:crypto'
-import { DatabaseSync } from 'node:sqlite'
 import express from 'express'
+import usersRouter from './usersRouter.js'
 
-const db = new DatabaseSync(process.env.DB_FILE ?? 'users.db')
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    password_hash TEXT NOT NULL
-  )
-`)
-
-const hashPassword = (password) => {
-  const salt = randomBytes(16).toString('hex')
-  return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`
-}
+const DEFAULT_PORT = 3001
 
 const app = express()
 app.use(express.json())
+app.use('/api/users', usersRouter)
 
-app.get('/api/users', (req, res) => {
-  res.json(db.prepare('SELECT id, name, email FROM users ORDER BY id').all())
+// Express recognises error handlers by their four parameters.
+app.use((error, req, res, _next) => {
+  const status = error.status ?? 500
+  if (status >= 500) console.error(error)
+  res
+    .status(status)
+    .json({ error: status >= 500 ? 'Internal server error' : error.message })
 })
 
-app.post('/api/users', (req, res) => {
-  const { name = '', email = '', password = '' } = req.body
-  const { lastInsertRowid } = db
-    .prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)')
-    .run(name, email, hashPassword(password))
-  res.status(201).json({ id: Number(lastInsertRowid), name, email })
-})
-
-app.delete('/api/users/:id', (req, res) => {
-  db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id)
-  res.status(204).end()
-})
-
-const port = process.env.PORT ?? 3001
+const port = process.env.PORT ?? DEFAULT_PORT
 app.listen(port, () => console.log(`API listening on http://localhost:${port}`))

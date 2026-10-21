@@ -9,7 +9,10 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT NOT NULL,
-    password_hash TEXT NOT NULL
+    password_hash TEXT NOT NULL,
+    password_salt TEXT NOT NULL,
+    password_algorithm TEXT NOT NULL,
+    password_iterations INTEGER NOT NULL
   )
 `)
 
@@ -17,11 +20,21 @@ export function listUsers() {
   return db.prepare('SELECT id, name, email FROM users ORDER BY id').all()
 }
 
-/** @returns {number} The id of the new user. */
-export function insertUser({ name, email, passwordHash }) {
+/**
+ * @param {Object} user
+ * @param {{ hash: string, salt: string, algorithm: string, iterations: number }} user.passwordRecord
+ *   The record returned by SecureHasher.hashWithSalt().
+ * @returns {number} The id of the new user.
+ */
+export function insertUser({ name, email, passwordRecord }) {
+  const { hash, salt, algorithm, iterations } = passwordRecord
   const { lastInsertRowid } = db
-    .prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)')
-    .run(name, email, passwordHash)
+    .prepare(
+      `INSERT INTO users
+        (name, email, password_hash, password_salt, password_algorithm, password_iterations)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .run(name, email, hash, salt, algorithm, iterations)
   return Number(lastInsertRowid)
 }
 

@@ -1,16 +1,23 @@
 import { Router } from 'express'
+import { SecureHasher } from 'laboration-2'
 import { deleteUser, insertUser, listUsers } from './database.js'
-import hashPassword from './passwordHash.js'
 
 const router = Router()
+const hasher = new SecureHasher()
 
 router.get('/', (req, res) => {
   res.json(listUsers())
 })
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { name = '', email = '', password = '' } = req.body
-  const id = insertUser({ name, email, passwordHash: hashPassword(password) })
+
+  if (typeof password !== 'string' || password === '') {
+    return res.status(400).json({ error: 'Password is required' })
+  }
+
+  const passwordRecord = await hasher.hashWithSalt(password)
+  const id = insertUser({ name, email, passwordRecord })
   res.status(201).json({ id, name, email })
 })
 
